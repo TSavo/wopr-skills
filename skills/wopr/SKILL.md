@@ -1,198 +1,163 @@
 ---
 name: wopr
-description: WOPR CLI commands for session management, skills, plugins, configuration, and inter-agent communication.
+description: Complete WOPR CLI reference for session management, skills, plugins, providers, middleware, and inter-agent communication.
 ---
 
-# WOPR CLI
+# WOPR CLI Reference
 
-WOPR is an AI agent orchestration system. Use these commands to manage sessions, skills, plugins, and communicate with other agents.
+WOPR is an AI agent orchestration system. This is the complete command reference.
 
-## Session Management
+## Setup & Configuration
 
 ```bash
-# List all sessions
-wopr session list
-
-# Create a new session with optional context
-wopr session new <name> [context]
-
-# Delete a session
-wopr session delete <name>
-
-# View session details
-wopr session show <name>
-
-# View conversation history
-wopr session history <name> [--limit N]
+wopr onboard                              # Interactive onboarding wizard
+wopr configure                            # Re-run configuration wizard
 ```
 
-## Injecting Messages
+## Authentication
 
 ```bash
-# Send a message to a session and get a response
-wopr inject <session> "your message here"
+wopr auth                                 # Show auth status
+wopr auth login                           # Login with Claude Max/Pro (OAuth)
+wopr auth api-key <key>                   # Use API key instead
+wopr auth logout                          # Clear credentials
+```
 
-# Log a message without getting a response (for context)
-wopr log <session> "message" [--from source]
+## Sessions
+
+```bash
+wopr session list                         # List all sessions
+wopr session create <name> [context]      # Create session with optional context
+wopr session create <name> --provider <id> [--fallback chain]  # Create with provider
+wopr session show <name> [--limit N]      # Show details and conversation history
+wopr session delete <name>                # Delete a session
+wopr session set-provider <name> <id> [--model name] [--fallback chain]  # Update provider
+wopr session init-docs <name>             # Initialize SOUL.md, AGENTS.md, USER.md
+wopr session inject <name> <message>      # Inject message, get AI response
+wopr session log <name> <message>         # Log message (no AI response)
 ```
 
 ## Skills
 
 ```bash
-# List installed skills
-wopr skill list
-
-# Search registries for skills
-wopr skill search <query>
-
-# Install a skill from registry or URL
-wopr skill install <source> [name]
-
-# Create a new skill
-wopr skill create <name> [description]
-
-# Remove a skill
-wopr skill remove <name>
-
-# Clear skill cache
-wopr skill cache clear
-
-# Manage registries
-wopr skill registry list
-wopr skill registry add <name> <url>
-wopr skill registry remove <name>
+wopr skill list                           # List installed skills
+wopr skill search <query>                 # Search registries for skills
+wopr skill install <source> [name]        # Install from registry or URL
+wopr skill create <name> [description]    # Create a new skill
+wopr skill remove <name>                  # Remove a skill
+wopr skill cache clear                    # Clear registry cache
+wopr skill registry list                  # List configured registries
+wopr skill registry add <name> <url>      # Add a skill registry
+wopr skill registry remove <name>         # Remove a registry
 ```
 
 ## Plugins
 
 ```bash
-# List installed plugins
-wopr plugin list
-
-# Install a plugin
-wopr plugin install <source>
-
-# Remove a plugin
-wopr plugin remove <name>
-
-# Enable/disable a plugin
-wopr plugin enable <name>
-wopr plugin disable <name>
-
-# Search for plugins
-wopr plugin search <query>
-
-# Manage plugin registries
-wopr plugin registry list
-wopr plugin registry add <name> <url>
-wopr plugin registry remove <name>
-```
-
-## Configuration
-
-```bash
-# View all configuration
-wopr config
-
-# Get a specific config value
-wopr config get <key>
-
-# Set a config value
-wopr config set <key> <value>
-
-# Reset configuration to defaults
-wopr config reset
-```
-
-## Cron Jobs (Scheduled Messages)
-
-```bash
-# List scheduled jobs
-wopr cron list
-
-# Add a cron job
-wopr cron add <name> <schedule> <session> "message"
-# Options: --now (run immediately), --once (run once then delete)
-
-# Remove a cron job
-wopr cron remove <name>
+wopr plugin list                          # List installed plugins
+wopr plugin install <source>              # Install (npm pkg, github:u/r, ./local)
+wopr plugin remove <name>                 # Remove a plugin
+wopr plugin enable <name>                 # Enable a plugin
+wopr plugin disable <name>                # Disable a plugin
+wopr plugin search <query>                # Search npm for plugins
+wopr plugin registry list                 # List plugin registries
+wopr plugin registry add <name> <url>     # Add a plugin registry
+wopr plugin registry remove <name>        # Remove a plugin registry
 ```
 
 ## Providers (AI Models)
 
 ```bash
-# List configured providers
-wopr provider list
-
-# Add provider credentials
-wopr provider add <provider-id> <api-key>
-
-# Remove provider
-wopr provider remove <provider-id>
-
-# Check provider health
-wopr provider health
+wopr providers list                       # List all providers and status
+wopr providers add <id> [credential]      # Add/update provider credential
+wopr providers remove <id>                # Remove provider credential
+wopr providers health-check               # Check health of all providers
+wopr providers default <id> [options]     # Set global provider defaults
+wopr providers show-defaults [id]         # Show global provider defaults
 ```
 
-## Daemon Management
+## Cron Jobs (Scheduled Messages)
 
 ```bash
-# Start the daemon
-wopr daemon start
-
-# Stop the daemon
-wopr daemon stop
-
-# Check daemon status
-wopr daemon status
-
-# View daemon logs
-wopr daemon logs [--follow]
+wopr cron list                            # List scheduled jobs
+wopr cron add <name> <sched> <sess> <msg> # Add cron [--now] [--once]
+wopr cron once <time> <session> <message> # One-time job (now, +5m, +1h, 09:00)
+wopr cron now <session> <message>         # Run immediately (no scheduling)
+wopr cron remove <name>                   # Remove a cron job
 ```
 
-## Cross-Session Communication
-
-To communicate with another session:
+## Configuration
 
 ```bash
-# Inject a message into another session
-wopr inject other-session "Hello from this session"
+wopr config get [key]                     # Show config (all or specific key)
+wopr config set <key> <value>             # Set config value
+wopr config list                          # List all config values
+wopr config reset                         # Reset to defaults
 ```
 
-To spawn a new session for a subtask:
+## Middleware
 
 ```bash
-# Create session, inject task, get result
-wopr session new subtask "You are a helper agent"
-wopr inject subtask "Do this specific task"
-wopr session delete subtask
+wopr middleware list                      # List all middleware
+wopr middleware chain                     # Show execution order
+wopr middleware show <name>               # Show middleware details
+wopr middleware enable <name>             # Enable middleware
+wopr middleware disable <name>            # Disable middleware
+wopr middleware priority <name> <n>       # Set middleware priority
 ```
 
-## Examples
+## Context Providers
 
-### Install and use a skill
 ```bash
+wopr context list                         # List all context providers
+wopr context show <name>                  # Show context provider details
+wopr context enable <name>                # Enable context provider
+wopr context disable <name>               # Disable context provider
+wopr context priority <name> <n>          # Set context provider priority
+```
+
+## Daemon
+
+```bash
+wopr daemon start                         # Start the daemon
+wopr daemon stop                          # Stop the daemon
+wopr daemon status                        # Check if daemon is running
+wopr daemon logs                          # Show daemon logs
+```
+
+## Common Workflows
+
+### Send a message to another session
+```bash
+wopr session inject other-session "Hello from this session"
+```
+
+### Spawn a helper agent for a subtask
+```bash
+wopr session create helper "You are a research assistant"
+wopr session inject helper "Research quantum computing advances in 2025"
+# ... use the response ...
+wopr session delete helper
+```
+
+### Schedule a daily check-in
+```bash
+wopr cron add daily-standup "0 9 * * *" main "Good morning! What's the plan for today?"
+```
+
+### Set up a one-time reminder
+```bash
+wopr cron once +30m main "Reminder: Check on the build status"
+```
+
+### Install skills from registry
+```bash
+wopr skill registry add wopr github:TSavo/wopr-skills/skills
 wopr skill search git
-wopr skill install github:tsavo/wopr-skills/skills/git-essentials
-wopr skill list
+wopr skill install github:TSavo/wopr-skills/skills/git-essentials
 ```
 
-### Create a scheduled reminder
+### Switch AI model for a session
 ```bash
-wopr cron add daily-standup "0 9 * * *" main "Time for standup! What's on the agenda?"
-```
-
-### Multi-agent workflow
-```bash
-# Create a researcher agent
-wopr session new researcher "You research topics thoroughly"
-wopr inject researcher "Research the latest on quantum computing"
-
-# Create a writer agent
-wopr session new writer "You write clear summaries"
-wopr inject writer "Summarize: [paste researcher output]"
-
-# Cleanup
-wopr session delete researcher
-wopr session delete writer
+wopr session set-provider my-session anthropic --model claude-sonnet-4-5-20250929
 ```
